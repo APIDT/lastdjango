@@ -1,0 +1,181 @@
+{% block title %}Профіль користувача{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Профіль -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <img src="https://via.placeholder.com/150" alt="Аватар користувача">
+        </div>
+        <div class="profile-info">
+            <h2>{{ user.username }}</h2>
+            <p class="email">📧 {{ user.email }}</p>
+            <p class="joined-date">🗓️ Дата приєднання: {{ user.date_joined|date:"d.m.Y" }}</p>
+            <div class="profile-buttons">
+                <button class="btn">Редагувати профіль</button>
+                <button class="btn">Повідомлення</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Розділ відео -->
+    <div class="videos-section">
+        <h3>🎥 Ваші відео</h3>
+        <div class="video-gallery">
+            {% if videos %}
+                {% for video in videos %}
+                    <div class="video-card">
+                        <video controls>
+                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                            Ваш браузер не підтримує відео.
+                        </video>
+                        <h5>{{ video.title }}</h5>
+                        <p>{{ video.description }}</p>
+                        <button class="btn-watch">Дивитися</button>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>У вас ще немає відео.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Розділ про користувача -->
+    <div class="about-section">
+        <h3>ℹ️ Про користувача</h3>
+        <p>Тут можна написати коротку інформацію про користувача, його хобі, інтереси і т.д.</p>
+    </div>
+</div>
+
+{% endblock %}
+
+<style>
+    /* Загальний стиль */
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #0d1321;
+        margin: 0;
+        padding: 0;
+        color: #131212;
+    }
+
+    .profile-container {
+        max-width: 1000px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #3E5C76;
+        border-radius: 15px;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .profile-avatar img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        margin-right: 30px;
+    }
+
+    .profile-info h2 {
+        font-size: 28px;
+        margin: 0;
+        color: #333;
+    }
+
+    .profile-info p {
+        font-size: 16px;
+        color: #777;
+        margin: 5px 0;
+    }
+
+    .profile-buttons .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-right: 10px;
+        background: #50ad9e;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .profile-buttons .btn:hover {
+        background: #f0ebd8;
+    }
+
+    .videos-section {
+        margin-top: 40px;
+    }
+
+    .videos-section h3 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .video-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .video-card {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .video-card video {
+        width: 100%;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+
+    .video-card h5 {
+        font-size: 18px;
+        margin: 10px 0;
+    }
+
+    .video-card p {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .btn-watch {
+        padding: 8px 18px;
+        font-size: 14px;
+        background: #4facfe;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn-watch:hover {
+        background: #00f2fe;
+    }
+
+    .about-section {
+        margin-top: 40px;
+    }
+
+    .about-section h3 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .about-section p {
+        font-size: 16px;
+        color: #777;
+    }
+</style>

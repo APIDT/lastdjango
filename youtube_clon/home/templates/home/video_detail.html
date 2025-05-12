@@ -1,0 +1,275 @@
+{% block content %}
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #292424;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 30px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    h1, h2, h3 {
+        color: #222;
+    }
+
+    .video-player-container {
+        margin: 20px 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    video {
+        width: 100%;
+        border-radius: 12px;
+    }
+
+    .video-info {
+        margin-top: 10px;
+        font-size: 15px;
+        color: #666;
+    }
+
+    .btn {
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+
+    .btn-outline-primary {
+        background: white;
+        border: 2px solid #007bff;
+        color: #007bff;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-outline-danger {
+        background: white;
+        border: 2px solid #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        text-decoration: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+    }
+
+    .comments-section {
+        margin-top: 40px;
+    }
+
+    .comment-list {
+        margin-top: 15px;
+    }
+
+    .comment {
+        background: #f1f1f1;
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+    }
+
+    .add-comment-button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        font-size: 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s ease;
+        margin-bottom: 15px;
+    }
+
+    .add-comment-button:hover {
+        background-color: #218838;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        width: 90%;
+        max-width: 500px;
+        border-radius: 10px;
+        position: relative;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 28px;
+        color: #888;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    textarea {
+        width: 100%;
+        height: 100px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 10px;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    form button[type="submit"] {
+        background-color: #007bff;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+    }
+
+    form button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const openBtn = document.getElementById('openCommentModal');
+        const modal = document.getElementById('commentModal');
+        const closeBtn = document.querySelector('.close-button');
+
+        if (openBtn && modal && closeBtn) {
+            openBtn.addEventListener('click', () => {
+                modal.style.display = 'block';
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+
+<div class="container">
+    <h1>{{ video.title }}</h1>
+    <p>{{ video.description }}</p>
+
+    <div class="video-player-container">
+        <video controls>
+            <source src="{{ video.video_file.url }}" type="video/mp4">
+            Ваш браузер не підтримує відео.
+        </video>
+    </div>
+
+    <div class="video-info">
+        <p>Автор: <strong>{{ video.user.username }}</strong> | Опубліковано: {{ video.created_at|date:"d.m.Y H:i" }}</p>
+    </div>
+
+    <h2>
+        👍 Лайки: <span id="likes-count">{{ video.get_likes_count }}</span> |
+        👎 Дизлайки: <span id="dislikes-count">{{ video.get_dislikes_count }}</span>
+    </h2>
+
+    {% if user.is_authenticated %}
+        <form action="{% url 'process_vote' video.id %}" method="POST" style="display: inline-block; margin-right: 10px;">
+            {% csrf_token %}
+            <button type="submit" name="like" class="btn {% if user_reaction and user_reaction.value == 'like' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                👍 {% if user_reaction and user_reaction.value == 'like' %}Вже подобається{% else %}Подобається{% endif %}
+            </button>
+        </form>
+
+        <form action="{% url 'process_vote' video.id %}" method="POST" style="display: inline-block;">
+            {% csrf_token %}
+            <button type="submit" name="dislike" class="btn {% if user_reaction and user_reaction.value == 'dislike' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                👎 {% if user_reaction and user_reaction.value == 'dislike' %}Вже не подобається{% else %}Не подобається{% endif %}
+            </button>
+        </form>
+    {% else %}
+        <p><a href="{% url 'login' %}?next={{ request.path }}">Увійдіть</a>, щоб оцінити відео або залишити коментар.</p>
+    {% endif %}
+
+    <hr>
+
+    <a href="{% url 'home' %}" class="btn-secondary">← Назад на головну</a>
+
+    <div class="comments-section">
+        <h3>💬 Коментарі ({{ comments.count }})</h3>
+
+        {% if user.is_authenticated %}
+            <button id="openCommentModal" class="add-comment-button">✍️ Додати коментар</button>
+        {% else %}
+            <p><a href="{% url 'login' %}?next={{ request.path }}">Увійдіть</a>, щоб залишити коментар.</p>
+        {% endif %}
+
+        <div class="comment-list">
+            {% for comment in comments %}
+                <div class="comment">
+                    <p><strong>{{ comment.user.username }}</strong>: {{ comment.text }}</p>
+                    <small>{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                </div>
+            {% empty %}
+                <p>Наразі немає жодного коментаря. Станьте першим!</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="commentModal" class="modal">
+        <div class="modal-content">
+            <button class="close-button">&times;</button>
+            <form action="{% url 'add_comment' video.id %}" method="post">
+                {% csrf_token %}
+                <label for="commentText">Ваш коментар:</label>
+                <textarea name="text" id="commentText" required></textarea>
+                <button type="submit">Залишити коментар</button>
+            </form>
+        </div>
+    </div>
+
+    {% if video.user == user %}
+        <form method="POST" action="{% url 'delete_video' video.id %}" onsubmit="return confirm('Ви впевнені, що хочете видалити це відео?');" style="margin-top: 20px;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">🗑️ Видалити відео</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock content %}
